@@ -27,22 +27,22 @@
             }],
             ['OS=="win"', {
                 "variables": {
-                    'dokan__install_dir%': '$(DokanLibrary1)/include/fuse'
+                    'winfsp__install_dir%': 'C:\\Program Files (x86)\\WinFsp'
                 },
                 "include_dirs": [
-                    "<(dokan__install_dir)",
+                    "<(winfsp__install_dir)\\inc\\fuse",
                     "$(INCLUDE)"
                 ],
                 "link_settings": {
                     "libraries": [
-                        "<(dokan__library)"
+                        "<(winfsp__library)"
                     ]
                 },
                 "conditions": [
                     ['target_arch=="x64"', {
-                        "variables": { 'dokan__library%': '$(DokanLibrary1_LibraryPath_x64)/dokanfuse1' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x64' }
                     }, {
-                        "variables": { 'dokan__library%': '$(DokanLibrary1_LibraryPath_x86)/dokanfuse1' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x86' }
                     }]
                 ]
             }]
