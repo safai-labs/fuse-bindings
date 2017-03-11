@@ -27,7 +27,7 @@
             }],
             ['OS=="win"', {
                 "variables": {
-                    'winfsp__install_dir%': 'C:\\Program Files (x86)\\WinFsp'
+                    'winfsp__install_dir%': '<!(find_winfsp.cmd)'
                 },
                 "include_dirs": [
                     "<(winfsp__install_dir)\\inc\\fuse",
