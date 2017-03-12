@@ -31,6 +31,7 @@
                 },
                 "include_dirs": [
                     "<(winfsp__install_dir)\\inc\\fuse",
+                    "<(winfsp__install_dir)\\inc"
                     "$(INCLUDE)"
                 ],
                 "link_settings": {
@@ -38,11 +39,28 @@
                         "<(winfsp__library)"
                     ]
                 },
+                "defines": [
+                    '_WIN32_WINNT=0x0601',
+                ],
                 "conditions": [
                     ['target_arch=="x64"', {
-                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x64' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x64' },
+                        "msvs_settings": {
+                            "VCLinkerTool": {
+                                "DelayLoadDLLs": [
+                                    "winfsp-x64.dll"
+                                ]
+                            }
+                        }
                     }, {
-                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x86' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x86' },
+                        "msvs_settings": {
+                            "VCLinkerTool": {
+                                "DelayLoadDLLs": [
+                                    "winfsp-x86.dll"
+                                ]
+                            }
+                        }
                     }]
                 ]
             }]

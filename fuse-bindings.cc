@@ -1271,6 +1271,9 @@ NAN_METHOD(Unmount) {
 }
 
 void Init(Handle<Object> exports) {
+  #if defined(_WIN32)
+  FspLoad(0);
+  #endif
   exports->Set(LOCAL_STRING("setCallback"), Nan::New<FunctionTemplate>(SetCallback)->GetFunction());
   exports->Set(LOCAL_STRING("setBuffer"), Nan::New<FunctionTemplate>(SetBuffer)->GetFunction());
   exports->Set(LOCAL_STRING("mount"), Nan::New<FunctionTemplate>(Mount)->GetFunction());

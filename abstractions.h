@@ -44,9 +44,10 @@ typedef void* thread_fn_rtn_t;
 
 #elif defined(_WIN32)
 
-#include <windows.h>
-#include <io.h>
-#include <winsock2.h>
+#pragma warning(push)
+#pragma warning(disable:4005)
+#include <winfsp/winfsp.h>
+#pragma warning(pop)
 
 typedef HANDLE bindings_sem_t;
 
