@@ -13,7 +13,7 @@
 #include <fuse_opt.h>
 
 #ifndef _MSC_VER
-// Need to use fuse_stat when using Dokany with Visual Studio.
+// Need to use fuse_stat when using Dokany/WinFsp with Visual Studio.
 // To keep things simple, when not using Visual Studio,
 // define fuse_stat to be "stat" so we can use fuse_stat in the code anyway.
 #define fuse_stat stat
@@ -1217,6 +1217,7 @@ NAN_METHOD(Mount) {
   thread_create(&(b->thread), bindings_thread, b);
 }
 
+#if !defined(_WIN32)
 class UnmountWorker : public Nan::AsyncWorker {
  public:
   UnmountWorker(Nan::Callback *callback, char *path)
@@ -1241,6 +1242,7 @@ class UnmountWorker : public Nan::AsyncWorker {
   char *path;
   int result;
 };
+#endif
 
 NAN_METHOD(SetCallback) {
   callback_constructor = new Nan::Callback(info[0].As<Function>());
@@ -1261,6 +1263,7 @@ NAN_METHOD(PopulateContext) {
 
 NAN_METHOD(Unmount) {
   if (!info[0]->IsString()) return Nan::ThrowError("mnt must be a string");
+#if !defined(_WIN32)
   Nan::Utf8String path(info[0]);
   Local<Function> callback = info[1].As<Function>();
 
@@ -1268,12 +1271,15 @@ NAN_METHOD(Unmount) {
   strcpy(path_alloc, *path);
 
   Nan::AsyncQueueWorker(new UnmountWorker(new Nan::Callback(callback), path_alloc));
+#else
+  fsp_fuse_signal_handler(SIGINT);
+#endif
 }
 
 void Init(Handle<Object> exports) {
-  #if defined(_WIN32)
+#if defined(_WIN32)
   FspLoad(0);
-  #endif
+#endif
   exports->Set(LOCAL_STRING("setCallback"), Nan::New<FunctionTemplate>(SetCallback)->GetFunction());
   exports->Set(LOCAL_STRING("setBuffer"), Nan::New<FunctionTemplate>(SetBuffer)->GetFunction());
   exports->Set(LOCAL_STRING("mount"), Nan::New<FunctionTemplate>(Mount)->GetFunction());

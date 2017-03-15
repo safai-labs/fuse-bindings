@@ -59,6 +59,7 @@ void thread_create (HANDLE* thread, thread_fn fn, void* data) {
 
 void thread_join (HANDLE thread) {
     WaitForSingleObject(thread, INFINITE);
+    CloseHandle(thread);
 }
 
 int fusermount (char *path) {

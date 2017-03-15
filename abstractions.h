@@ -50,10 +50,7 @@ typedef void* thread_fn_rtn_t;
 
 #elif defined(_WIN32)
 
-#pragma warning(push)
-#pragma warning(disable:4005)
 #include <winfsp/winfsp.h>
-#pragma warning(pop)
 
 typedef HANDLE bindings_sem_t;
 

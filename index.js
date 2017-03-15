@@ -36,7 +36,7 @@ exports.mount = function (mnt, ops, opts, cb) {
 
   ops = xtend(ops, opts) // clone
   if (/\*|(^,)fuse-bindings(,$)/.test(process.env.DEBUG)) ops.options = ['debug'].concat(ops.options || [])
-  mnt = path.resolve(mnt)
+  if (os.platform() !== 'win32') mnt = path.resolve(mnt)
 
   if (ops.displayFolder && IS_OSX) { // only works on osx
     if (!ops.options) ops.options = []
