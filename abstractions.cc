@@ -59,40 +59,11 @@ void thread_create (HANDLE* thread, thread_fn fn, void* data) {
 
 void thread_join (HANDLE thread) {
     WaitForSingleObject(thread, INFINITE);
+    CloseHandle(thread);
 }
 
 int fusermount (char *path) {
-    char* dokanPath = getenv("DokanLibrary1");
-    char cmdLine[MAX_PATH];
-
-    if(dokanPath) {
-        // Let's make sure there aren't no double slashes
-        const char* dokanPathLast = dokanPath + strlen(dokanPath) - 1;
-
-        const char* potentialEndSlash =
-            (*dokanPathLast == '/' || *dokanPathLast == '\\') ? "" : "\\";
-
-        sprintf(cmdLine, "\"%s%sdokanctl.exe\" /u %s", dokanPath, potentialEndSlash, path);
-    }
-    else sprintf(cmdLine, "dokanctl.exe /u %s", path);
-
-    STARTUPINFO info = {sizeof(info)};
-    PROCESS_INFORMATION procInfo;
-    CreateProcess(NULL, cmdLine, NULL, NULL, false, CREATE_NO_WINDOW, NULL, NULL, &info, &procInfo);
-
-    WaitForSingleObject(procInfo.hProcess, INFINITE);
-
-    DWORD exitCode = -1;
-    GetExitCodeProcess(procInfo.hProcess, &exitCode);
-
-    CloseHandle(procInfo.hProcess);
-    CloseHandle(procInfo.hThread);
-
-    return exitCode;
-
-    // dokanctl.exe requires admin permissions for some reason, so if node is not run as admin,
-    // it'll fail to create the process for unmounting. The path will be unmounted once
-    // the process is killed, however, so there's that!
+    return 0;
 }
 
 #else

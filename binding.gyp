@@ -27,22 +27,40 @@
             }],
             ['OS=="win"', {
                 "variables": {
-                    'dokan__install_dir%': '$(DokanLibrary1)/include/fuse'
+                    'winfsp__install_dir%': '<!(find_winfsp.cmd)'
                 },
                 "include_dirs": [
-                    "<(dokan__install_dir)",
+                    "<(winfsp__install_dir)\\inc\\fuse",
+                    "<(winfsp__install_dir)\\inc"
                     "$(INCLUDE)"
                 ],
                 "link_settings": {
                     "libraries": [
-                        "<(dokan__library)"
+                        "<(winfsp__library)"
                     ]
                 },
+                "defines": [
+                    '_WIN32_WINNT=0x0601',
+                ],
                 "conditions": [
                     ['target_arch=="x64"', {
-                        "variables": { 'dokan__library%': '$(DokanLibrary1_LibraryPath_x64)/dokanfuse1' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x64' },
+                        "msvs_settings": {
+                            "VCLinkerTool": {
+                                "DelayLoadDLLs": [
+                                    "winfsp-x64.dll"
+                                ]
+                            }
+                        }
                     }, {
-                        "variables": { 'dokan__library%': '$(DokanLibrary1_LibraryPath_x86)/dokanfuse1' }
+                        "variables": { 'winfsp__library%': '<(winfsp__install_dir)\\lib\\winfsp-x86' },
+                        "msvs_settings": {
+                            "VCLinkerTool": {
+                                "DelayLoadDLLs": [
+                                    "winfsp-x86.dll"
+                                ]
+                            }
+                        }
                     }]
                 ]
             }]

@@ -3,9 +3,9 @@
 #define FUSE_USE_VERSION 29
 
 #if defined(_WIN32) && _MSC_VER < 1900
-// Visual Studio 2015 adds struct timespec,
+// Visual Studio 2015 adds struct fuse_timespec,
 // this #define will make Dokany define its
-// own struct timespec on earlier versions
+// own struct fuse_timespec on earlier versions
 #define _CRT_NO_TIME_T
 #endif
 
@@ -13,10 +13,10 @@
 #include <fuse_opt.h>
 
 #ifndef _MSC_VER
-// Need to use FUSE_STAT when using Dokany with Visual Studio.
+// Need to use fuse_stat when using Dokany/WinFsp with Visual Studio.
 // To keep things simple, when not using Visual Studio,
-// define FUSE_STAT to be "stat" so we can use FUSE_STAT in the code anyway.
-#define FUSE_STAT stat
+// define fuse_stat to be "stat" so we can use fuse_stat in the code anyway.
+#define fuse_stat stat
 #endif
 
 #include <stdio.h>
@@ -72,7 +72,7 @@ enum bindings_ops_t {
 
 static Nan::Persistent<Function> buffer_constructor;
 static Nan::Callback *callback_constructor;
-static struct FUSE_STAT empty_stat;
+static struct fuse_stat empty_stat;
 
 struct bindings_t {
   int index;
@@ -136,8 +136,8 @@ struct bindings_t {
   struct fuse_file_info *info;
   char *path;
   char *name;
-  FUSE_OFF_T offset;
-  FUSE_OFF_T length;
+  fuse_off_t offset;
+  fuse_off_t length;
   void *data; // various structs
   int mode;
   int dev;
@@ -216,7 +216,7 @@ static bindings_t *bindings_get_context () {
   return b;
 }
 
-static int bindings_mknod (const char *path, mode_t mode, dev_t dev) {
+static int bindings_mknod (const char *path, fuse_mode_t mode, dev_t dev) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_MKNOD;
@@ -227,7 +227,7 @@ static int bindings_mknod (const char *path, mode_t mode, dev_t dev) {
   return bindings_call(b);
 }
 
-static int bindings_truncate (const char *path, FUSE_OFF_T size) {
+static int bindings_truncate (const char *path, fuse_off_t size) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_TRUNCATE;
@@ -237,7 +237,7 @@ static int bindings_truncate (const char *path, FUSE_OFF_T size) {
   return bindings_call(b);
 }
 
-static int bindings_ftruncate (const char *path, FUSE_OFF_T size, struct fuse_file_info *info) {
+static int bindings_ftruncate (const char *path, fuse_off_t size, struct fuse_file_info *info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_FTRUNCATE;
@@ -248,7 +248,7 @@ static int bindings_ftruncate (const char *path, FUSE_OFF_T size, struct fuse_fi
   return bindings_call(b);
 }
 
-static int bindings_getattr (const char *path, struct FUSE_STAT *stat) {
+static int bindings_getattr (const char *path, struct fuse_stat *stat) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_GETATTR;
@@ -258,7 +258,7 @@ static int bindings_getattr (const char *path, struct FUSE_STAT *stat) {
   return bindings_call(b);
 }
 
-static int bindings_fgetattr (const char *path, struct FUSE_STAT *stat, struct fuse_file_info *info) {
+static int bindings_fgetattr (const char *path, struct fuse_stat *stat, struct fuse_file_info *info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_FGETATTR;
@@ -301,7 +301,7 @@ static int bindings_fsyncdir (const char *path, int datasync, struct fuse_file_i
   return bindings_call(b);
 }
 
-static int bindings_readdir (const char *path, void *buf, fuse_fill_dir_t filler, FUSE_OFF_T offset, struct fuse_file_info *info) {
+static int bindings_readdir (const char *path, void *buf, fuse_fill_dir_t filler, fuse_off_t offset, struct fuse_file_info *info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_READDIR;
@@ -323,7 +323,7 @@ static int bindings_readlink (const char *path, char *buf, size_t len) {
   return bindings_call(b);
 }
 
-static int bindings_chown (const char *path, uid_t uid, gid_t gid) {
+static int bindings_chown (const char *path, fuse_uid_t uid, fuse_gid_t gid) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_CHOWN;
@@ -334,7 +334,7 @@ static int bindings_chown (const char *path, uid_t uid, gid_t gid) {
   return bindings_call(b);
 }
 
-static int bindings_chmod (const char *path, mode_t mode) {
+static int bindings_chmod (const char *path, fuse_mode_t mode) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_CHMOD;
@@ -421,7 +421,7 @@ static int bindings_removexattr (const char *path, const char *name) {
   return bindings_call(b);
 }
 
-static int bindings_statfs (const char *path, struct statvfs *statfs) {
+static int bindings_statfs (const char *path, struct fuse_statvfs *statfs) {
   bindings_t *b = bindings_get_context();
   
   b->op = OP_STATFS;
@@ -453,7 +453,7 @@ static int bindings_opendir (const char *path, struct fuse_file_info *info) {
   return bindings_call(b);
 }
 
-static int bindings_read (const char *path, char *buf, size_t len, FUSE_OFF_T offset, struct fuse_file_info *info) {
+static int bindings_read (const char *path, char *buf, size_t len, fuse_off_t offset, struct fuse_file_info *info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_READ;
@@ -466,7 +466,7 @@ static int bindings_read (const char *path, char *buf, size_t len, FUSE_OFF_T of
   return bindings_call(b);
 }
 
-static int bindings_write (const char *path, const char *buf, size_t len, FUSE_OFF_T offset, struct fuse_file_info * info) {
+static int bindings_write (const char *path, const char *buf, size_t len, fuse_off_t offset, struct fuse_file_info * info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_WRITE;
@@ -509,7 +509,7 @@ static int bindings_access (const char *path, int mode) {
   return bindings_call(b);
 }
 
-static int bindings_create (const char *path, mode_t mode, struct fuse_file_info *info) {
+static int bindings_create (const char *path, fuse_mode_t mode, struct fuse_file_info *info) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_CREATE;
@@ -520,7 +520,7 @@ static int bindings_create (const char *path, mode_t mode, struct fuse_file_info
   return bindings_call(b);
 }
 
-static int bindings_utimens (const char *path, const struct timespec tv[2]) {
+static int bindings_utimens (const char *path, const struct fuse_timespec tv[2]) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_UTIMENS;
@@ -569,7 +569,7 @@ static int bindings_symlink (const char *path, const char *dest) {
   return bindings_call(b);
 }
 
-static int bindings_mkdir (const char *path, mode_t mode) {
+static int bindings_mkdir (const char *path, fuse_mode_t mode) {
   bindings_t *b = bindings_get_context();
 
   b->op = OP_MKDIR;
@@ -732,12 +732,12 @@ static thread_fn_rtn_t bindings_thread (void *data) {
   return 0;
 }
 
-NAN_INLINE static Local<Date> bindings_get_date (struct timespec *out) {
+NAN_INLINE static Local<Date> bindings_get_date (struct fuse_timespec *out) {
   int ms = (out->tv_nsec / 1000);
   return Nan::New<Date>(out->tv_sec * 1000 + ms).ToLocalChecked();
 }
 
-NAN_INLINE static void bindings_set_date (struct timespec *out, Local<Date> date) {
+NAN_INLINE static void bindings_set_date (struct fuse_timespec *out, Local<Date> date) {
   double ms = date->NumberValue();
   time_t secs = (time_t)(ms / 1000.0);
   time_t rem = ms - (1000.0 * secs);
@@ -746,7 +746,7 @@ NAN_INLINE static void bindings_set_date (struct timespec *out, Local<Date> date
   out->tv_nsec = ns;
 }
 
-NAN_INLINE static void bindings_set_stat (struct FUSE_STAT *stat, Local<Object> obj) {
+NAN_INLINE static void bindings_set_stat (struct fuse_stat *stat, Local<Object> obj) {
   if (obj->Has(LOCAL_STRING("dev"))) stat->st_dev = obj->Get(LOCAL_STRING("dev"))->NumberValue();
   if (obj->Has(LOCAL_STRING("ino"))) stat->st_ino = obj->Get(LOCAL_STRING("ino"))->NumberValue();
   if (obj->Has(LOCAL_STRING("mode"))) stat->st_mode = obj->Get(LOCAL_STRING("mode"))->Uint32Value();
@@ -768,7 +768,7 @@ NAN_INLINE static void bindings_set_stat (struct FUSE_STAT *stat, Local<Object> 
 #endif
 }
 
-NAN_INLINE static void bindings_set_statfs (struct statvfs *statfs, Local<Object> obj) { // from http://linux.die.net/man/2/stat
+NAN_INLINE static void bindings_set_statfs (struct fuse_statvfs *statfs, Local<Object> obj) { // from http://linux.die.net/man/2/stat
   if (obj->Has(LOCAL_STRING("bsize"))) statfs->f_bsize = obj->Get(LOCAL_STRING("bsize"))->Uint32Value();
   if (obj->Has(LOCAL_STRING("frsize"))) statfs->f_frsize = obj->Get(LOCAL_STRING("frsize"))->Uint32Value();
   if (obj->Has(LOCAL_STRING("blocks"))) statfs->f_blocks = obj->Get(LOCAL_STRING("blocks"))->Uint32Value();
@@ -817,13 +817,13 @@ NAN_METHOD(OpCallback) {
   if (!b->result) {
     switch (b->op) {
       case OP_STATFS: {
-        if (info.Length() > 2 && info[2]->IsObject()) bindings_set_statfs((struct statvfs *) b->data, info[2].As<Object>());
+        if (info.Length() > 2 && info[2]->IsObject()) bindings_set_statfs((struct fuse_statvfs *) b->data, info[2].As<Object>());
       }
       break;
 
       case OP_GETATTR:
       case OP_FGETATTR: {
-        if (info.Length() > 2 && info[2]->IsObject()) bindings_set_stat((struct FUSE_STAT *) b->data, info[2].As<Object>());
+        if (info.Length() > 2 && info[2]->IsObject()) bindings_set_stat((struct fuse_stat *) b->data, info[2].As<Object>());
       }
       break;
 
@@ -1147,7 +1147,7 @@ static void bindings_dispatch (uv_async_t* handle, int status) {
     return;
 
     case OP_UTIMENS: {
-      struct timespec *tv = (struct timespec *) b->data;
+      struct fuse_timespec *tv = (struct fuse_timespec *) b->data;
       Local<Value> tmp[] = {LOCAL_STRING(b->path), bindings_get_date(tv), bindings_get_date(tv + 1), callback};
       bindings_call_op(b, b->ops_utimens, 4, tmp);
     }
@@ -1273,6 +1273,7 @@ NAN_METHOD(Mount) {
   thread_create(&(b->thread), bindings_thread, b);
 }
 
+#if !defined(_WIN32)
 class UnmountWorker : public Nan::AsyncWorker {
  public:
   UnmountWorker(Nan::Callback *callback, char *path)
@@ -1297,6 +1298,7 @@ class UnmountWorker : public Nan::AsyncWorker {
   char *path;
   int result;
 };
+#endif
 
 NAN_METHOD(SetCallback) {
   callback_constructor = new Nan::Callback(info[0].As<Function>());
@@ -1317,6 +1319,7 @@ NAN_METHOD(PopulateContext) {
 
 NAN_METHOD(Unmount) {
   if (!info[0]->IsString()) return Nan::ThrowError("mnt must be a string");
+#if !defined(_WIN32)
   Nan::Utf8String path(info[0]);
   Local<Function> callback = info[1].As<Function>();
 
@@ -1324,9 +1327,15 @@ NAN_METHOD(Unmount) {
   strcpy(path_alloc, *path);
 
   Nan::AsyncQueueWorker(new UnmountWorker(new Nan::Callback(callback), path_alloc));
+#else
+  fsp_fuse_signal_handler(SIGINT);
+#endif
 }
 
 void Init(Handle<Object> exports) {
+#if defined(_WIN32)
+  FspLoad(0);
+#endif
   exports->Set(LOCAL_STRING("setCallback"), Nan::New<FunctionTemplate>(SetCallback)->GetFunction());
   exports->Set(LOCAL_STRING("setBuffer"), Nan::New<FunctionTemplate>(SetBuffer)->GetFunction());
   exports->Set(LOCAL_STRING("mount"), Nan::New<FunctionTemplate>(Mount)->GetFunction());

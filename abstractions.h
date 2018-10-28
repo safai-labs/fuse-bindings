@@ -13,6 +13,12 @@
 #include <fuse_lowlevel.h>
 
 #define FUSE_OFF_T off_t
+#define fuse_off_t off_t
+#define fuse_mode_t mode_t
+#define fuse_uid_t uid_t
+#define fuse_gid_t gid_t
+#define fuse_statvfs statvfs
+#define fuse_timespec timespec
 
 typedef dispatch_semaphore_t bindings_sem_t;
 
@@ -44,9 +50,7 @@ typedef void* thread_fn_rtn_t;
 
 #elif defined(_WIN32)
 
-#include <windows.h>
-#include <io.h>
-#include <winsock2.h>
+#include <winfsp/winfsp.h>
 
 typedef HANDLE bindings_sem_t;
 
@@ -88,6 +92,12 @@ typedef DWORD thread_fn_rtn_t;
 #include <fuse_lowlevel.h>
 
 #define FUSE_OFF_T off_t
+#define fuse_off_t off_t
+#define fuse_mode_t mode_t
+#define fuse_uid_t uid_t
+#define fuse_gid_t gid_t
+#define fuse_statvfs statvfs
+#define fuse_timespec timespec
 
 typedef sem_t bindings_sem_t;
 
